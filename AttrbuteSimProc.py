@@ -3,6 +3,7 @@ import numpy as np
 import commands
 import FaceDetection
 import image_matching
+import os
 
 def labeling_user(input_js_filepath, output_js_filepath):
     with open(input_js_filepath) as input_f:
@@ -502,11 +503,80 @@ def profile_img_similarity_no_face(twitter_js_filepath, flickr_js_filepath, twi_
     return sim_matrix
 
 
-def profile_img_similarity_face(twi_profile_images_rootdir, flickr_profile_images_rootdir,
-                                both_faces_filepath, save_txt_path, aligned_size):
+def profile_img_similarity_face(target_root, both_faces_filepath, save_txt_path, aligned_size, matrix_rownum, matrix_colnum):
+    face_pair_info = dict()
+    face_pair_infos = []
     with open(both_faces_filepath) as both_face_f:
         for line in both_face_f:
-            print line
+            line_parts = line.replace('\n', '').split(',')
+            face_pair_info['row_index'] = int(line_parts[0].replace(' ', ''))
+            face_pair_info['col_index'] = int(line_parts[1].replace(' ', ''))
+            face_pair_info['twi_face_user'] = line_parts[2].replace(' ', '')
+            face_pair_info['flickr_face_user'] = line_parts[3].replace(' ', '')
+            face_pair_infos.append(face_pair_info.copy())
+            face_pair_info.clear()
+
+    # copying faces dir to aligned dir
+    print 'copying faces data...'
+    twi_faces_dir = target_root + 'twitter_faces/'
+    flickr_faces_dir = target_root + 'flickr_faces/'
+    if not os.path.exists(twi_faces_dir):
+        os.makedirs(twi_faces_dir)
+    if not os.path.exists(flickr_faces_dir):
+        os.makedirs(flickr_faces_dir)
+
+    for face_pair_info in face_pair_infos:
+        if not os.path.exists(twi_faces_dir + face_pair_info['twi_face_user'] + '/'):
+            os.makedirs(twi_faces_dir + face_pair_info['twi_face_user'] + '/')
+            os.system('cp -a ' + target_root + 'twitter_profile_images/' + face_pair_info['twi_face_user'] + '/*'
+                  + ' ' + twi_faces_dir + face_pair_info['twi_face_user'] + '/')
+
+        if not os.path.exists(flickr_faces_dir + face_pair_info['flickr_face_user'] + '/'):
+            os.makedirs(flickr_faces_dir + face_pair_info['flickr_face_user'] + '/')
+            os.system('cp -a ' + target_root + 'flickr_profile_images/' + face_pair_info['flickr_face_user'] + '/*'
+                  + ' ' + flickr_faces_dir + face_pair_info['flickr_face_user'] + '/')
+
+    # print 'aligning faces...'
+    # twi_aligned_faces_dir = target_root + 'twitter_faces_' + str(aligned_size)
+    # flk_aligned_faces_dir = target_root + 'flickr_faces_' + str(aligned_size)
+    #
+    # os.system('python ../facenet/src/align_dataset_mtcnn.py ' + target_root + 'twitter_faces/ ' +
+    #           twi_aligned_faces_dir + ' --image_size ' + str(aligned_size) + ' --margin 44')
+    #
+    # os.system('python ../facenet/src/align_dataset_mtcnn.py ' + target_root + 'flickr_faces/ ' +
+    #           flk_aligned_faces_dir + ' --image_size ' + str(aligned_size) + ' --margin 44')
+
+    print 'matching faces...'
+    sim_matrix = np.zeros((matrix_rownum, matrix_colnum))
+    for face_pair_info in face_pair_infos:
+        print 'print matching %s and %s at (%d, %d)' % (face_pair_info['twi_face_user'], face_pair_info['flickr_face_user'],
+                                                        face_pair_info['row_index'], face_pair_info['col_index'])
+        try:
+            twi_pic_path = target_root + 'twitter_faces_' + str(aligned_size) + '/' + \
+                           face_pair_info['twi_face_user'] + '/profile_image.png'
+
+
+            flk_pic_path = target_root + 'flickr_faces_' + str(aligned_size) + '/' + \
+                           face_pair_info['flickr_face_user'] + '/profile_image.png'
+
+            sim_score = FaceDetection.FaceMatching(twi_pic_path, flk_pic_path)
+
+        except (TypeError, IOError):
+            try:
+                twi_pic_path = target_root + 'twitter_profile_images/' + \
+                               face_pair_info['twi_face_user'] + '/profile_image.jpg'
+
+                flk_pic_path = target_root + 'flickr_profile_images/' + \
+                               face_pair_info['flickr_face_user'] + '/profile_image.jpg'
+
+                __, __, __, sim_score = image_matching.match_images(twi_pic_path, flk_pic_path)
+
+            except Exception:
+                sim_score = 0.0
+
+        sim_matrix[face_pair_info['row_index']][face_pair_info['col_index']] = sim_score
+        np.savetxt(save_txt_path, sim_matrix)
+
 
 if __name__ == '__main__':
 
@@ -519,10 +589,14 @@ if __name__ == '__main__':
     # location_similaritydef('../target_data/twitter_info_list.js',
     #                 '../target_data/flickr_info_list.js')
 
-      profile_img_similarity_no_face('../target_data/twitter_info_list.js',
-                '../target_data/flickr_info_list.js', '../target_data/twitter_profile_images/',
-                                     '../target_data/flickr_profile_images/','../target_data/profile_pic_similarity_matrix.txt'
-                                     , '../target_data/both_faces.txt')
+      # profile_img_similarity_no_face('../target_data/twitter_info_list.js',
+      #           '../target_data/flickr_info_list.js', '../target_data/twitter_profile_images/',
+      #                                '../target_data/flickr_profile_images/','../target_data/profile_pic_similarity_matrix.txt'
+      #                                , '../target_data/both_faces.txt')
+
+    profile_img_similarity_face('../target_data/',
+                                '../target_data/both_have_faces_pairs.txt',
+                                '../target_data/profile_pic_similarity_matrix_face.txt', 160, 2068, 504)
     # test strings similarity
     # string1 = 'my name is yinhao'
     # string2 = 'something is common'

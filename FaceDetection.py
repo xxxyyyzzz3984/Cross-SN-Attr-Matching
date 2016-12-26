@@ -41,8 +41,12 @@ def face_detect(test_img_path, cascPath, show_result = False, save_dir = None):
 def FaceMatching(aligned_face1_path, aligned_face2_path):
     aligned_face1 = cv2.imread(aligned_face1_path)
     aligned_face2 = cv2.imread(aligned_face2_path)
-    gray_face1 = cv2.cvtColor(aligned_face1, cv2.COLOR_BGR2GRAY)
-    gray_face2 = cv2.cvtColor(aligned_face2, cv2.COLOR_BGR2GRAY)
+    try:
+        gray_face1 = cv2.cvtColor(aligned_face1, cv2.COLOR_BGR2GRAY)
+        gray_face2 = cv2.cvtColor(aligned_face2, cv2.COLOR_BGR2GRAY)
+    except cv2.error:
+        gray_face1 = aligned_face1
+        gray_face2 = aligned_face2
 
     mat1 = array(gray_face1)
     mat2 = array(gray_face2)
