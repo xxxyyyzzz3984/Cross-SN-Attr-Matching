@@ -104,7 +104,7 @@ def calc_stringlist_similarity_LSA(string_list1, string_list2):
 
     return sim_score
 
-def personal_website_similarity(twitter_js_filepath, flickr_js_filepath):
+def personal_website_similarity(twitter_js_filepath, flickr_js_filepath, save_txt_path):
 
     twi_js_file_linenum = sum(1 for line in open(twitter_js_filepath))
     flickr_js_file_linenum = sum(1 for line in open(flickr_js_filepath))
@@ -140,9 +140,9 @@ def personal_website_similarity(twitter_js_filepath, flickr_js_filepath):
                 print 'comparing the personal websites for %s and %s.' % \
                         (twi_info_js['screen_name'], flickr_info_js['ownername'])
                 '''Change shortened Twitter URL to common URL'''
-                real_twi_url = twi_info_js['personal_website'].replace('http://', '').replace('https://', '').replace(' ','')
+                real_twi_url = twi_info_js['personal_website'].lower().replace('http://', '').replace('https://', '').replace(' ', '')
 
-                real_flckr_url = flickr_info_js['website'].replace('http://', '').replace('https://', '').replace(' ','')
+                real_flckr_url = flickr_info_js['website'].lower().replace('http://', '').replace('https://', '').replace(' ', '')
 
                 if len(real_twi_url) >= len(real_flckr_url):
                     short_url = real_flckr_url
@@ -168,11 +168,11 @@ def personal_website_similarity(twitter_js_filepath, flickr_js_filepath):
     # saving matrix
     # later use np.loadtxt(txt_path) to load the variable
     print 'Finished comparing all the usernames, saving the similarity_matrix.'
-    np.savetxt('../target_data/personal_website_similarity_matrix.txt', sim_matrix)
+    np.savetxt(save_txt_path, sim_matrix)
     return sim_matrix
 
 
-def username_similarity(twitter_js_filepath, flickr_js_filepath):
+def username_similarity(twitter_js_filepath, flickr_js_filepath, save_txt_path):
     twi_js_file_linenum = sum(1 for line in open(twitter_js_filepath))
     flickr_js_file_linenum = sum(1 for line in open(flickr_js_filepath))
 
@@ -210,8 +210,8 @@ def username_similarity(twitter_js_filepath, flickr_js_filepath):
             print 'comparing %s and %s.' % (twi_name, flickr_ownername)
 
             try:
-                flickr_realname = flickr_info_js['realname'].lower().replace(' ','')
-                flickr_realname = flickr_realname.lower().replace(' ','')
+                flickr_realname = flickr_info_js['realname'].lower().replace(' ', '')
+                flickr_realname = flickr_realname.lower().replace(' ', '')
             except KeyError:
                 pass
 
@@ -244,10 +244,10 @@ def username_similarity(twitter_js_filepath, flickr_js_filepath):
     # saving matrix
     # later use np.loadtxt(txt_path) to load the
     print 'Finished comparing all the usernames, saving the similarity_matrix.'
-    np.savetxt('../target_data/username_similarity_matrix.txt', sim_matrix)
+    np.savetxt(save_txt_path, sim_matrix)
     return sim_matrix
 
-def bio_similarity(twitter_js_filepath, flickr_js_filepath):
+def bio_similarity(twitter_js_filepath, flickr_js_filepath, save_txt_path):
     twi_js_file_linenum = sum(1 for line in open(twitter_js_filepath))
     flickr_js_file_linenum = sum(1 for line in open(flickr_js_filepath))
 
@@ -311,10 +311,10 @@ def bio_similarity(twitter_js_filepath, flickr_js_filepath):
     # saving matrix
     # later use np.loadtxt(txt_path) to load the
     print 'Finished comparing all the bios, saving the similarity_matrix.'
-    np.savetxt('../target_data/bio_similarity_matrix.txt', sim_matrix)
+    np.savetxt(save_txt_path, sim_matrix)
     return sim_matrix
 
-def location_similaritydef(twitter_js_filepath, flickr_js_filepath):
+def location_similaritydef(twitter_js_filepath, flickr_js_filepath, save_txt_path):
     twi_js_file_linenum = sum(1 for line in open(twitter_js_filepath))
     flickr_js_file_linenum = sum(1 for line in open(flickr_js_filepath))
 
@@ -416,11 +416,12 @@ def location_similaritydef(twitter_js_filepath, flickr_js_filepath):
     # saving matrix
     # later use np.loadtxt(txt_path) to load the
     print 'Finished comparing all the bios, saving the similarity_matrix.'
-    np.savetxt('../target_data/location_similarity_matrix.txt', sim_matrix)
+    np.savetxt(save_txt_path, sim_matrix)
     return sim_matrix
 
 '''call this function first before calling face recognition'''
-def profile_img_similarity_no_face(twitter_js_filepath, flickr_js_filepath):
+def profile_img_similarity_no_face(twitter_js_filepath, flickr_js_filepath, twi_images_root_dir, flickr_images_root_dir,
+                                   save_txt_path, both_face_txt_path):
     twi_js_file_linenum = sum(1 for line in open(twitter_js_filepath))
     flickr_js_file_linenum = sum(1 for line in open(flickr_js_filepath))
 
@@ -455,8 +456,8 @@ def profile_img_similarity_no_face(twitter_js_filepath, flickr_js_filepath):
             flickr_owner_id = flickr_info_js['owner_id']
             twi_name = twi_info_js['screen_name']
 
-            flickr_profilepic_path = '../target_data/flickr_profile_images/' + flickr_owner_id + '/profile_image.jpg'
-            twi_profilepic_path = '../target_data/twitter_profile_images/' + twi_name + '/profile_image.jpg'
+            flickr_profilepic_path = flickr_images_root_dir + flickr_owner_id + '/profile_image.jpg'
+            twi_profilepic_path = twi_images_root_dir + twi_name + '/profile_image.jpg'
 
 
 
@@ -465,7 +466,7 @@ def profile_img_similarity_no_face(twitter_js_filepath, flickr_js_filepath):
                 if FaceDetection.face_detect(flickr_profilepic_path, cascPath) > 0 \
                         and FaceDetection.face_detect(twi_profilepic_path, cascPath) > 0:
                     print 'Both have faces'
-                    record_f = open('../target_data/both_have_faces_pairs.txt', 'a')
+                    record_f = open(both_face_txt_path, 'a')
                     record_f.write(str(row_index) + ', ' + str(col_index)
                                    + ', ' + twi_name + ', ' + flickr_owner_id)
                     record_f.write('\n')
@@ -496,10 +497,16 @@ def profile_img_similarity_no_face(twitter_js_filepath, flickr_js_filepath):
 
     # saving matrix
     # later use np.loadtxt(txt_path) to load the
-    print 'Finished comparing all the bios, saving the similarity_matrix.'
-    np.savetxt('../target_data/profile_similarity_matrix_noface.txt', sim_matrix)
+    print 'Finished comparing all the pictures, saving the similarity_matrix.'
+    np.savetxt(save_txt_path, sim_matrix)
     return sim_matrix
 
+
+def profile_img_similarity_face(twi_profile_images_rootdir, flickr_profile_images_rootdir,
+                                both_faces_filepath, save_txt_path, aligned_size):
+    with open(both_faces_filepath) as both_face_f:
+        for line in both_face_f:
+            print line
 
 if __name__ == '__main__':
 
@@ -513,7 +520,9 @@ if __name__ == '__main__':
     #                 '../target_data/flickr_info_list.js')
 
       profile_img_similarity_no_face('../target_data/twitter_info_list.js',
-                '../target_data/flickr_info_list.js')
+                '../target_data/flickr_info_list.js', '../target_data/twitter_profile_images/',
+                                     '../target_data/flickr_profile_images/','../target_data/profile_pic_similarity_matrix.txt'
+                                     , '../target_data/both_faces.txt')
     # test strings similarity
     # string1 = 'my name is yinhao'
     # string2 = 'something is common'

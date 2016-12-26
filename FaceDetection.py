@@ -1,4 +1,8 @@
 import cv2
+from numpy import array
+import math
+import numpy as np
+
 
 def face_detect(test_img_path, cascPath, show_result = False, save_dir = None):
 
@@ -33,9 +37,57 @@ def face_detect(test_img_path, cascPath, show_result = False, save_dir = None):
 
     return len(faces)
 
+'''Aligned the faces before using this function, otherwise the result is not satisfying'''
+def FaceMatching(aligned_face1_path, aligned_face2_path):
+    aligned_face1 = cv2.imread(aligned_face1_path)
+    aligned_face2 = cv2.imread(aligned_face2_path)
+    gray_face1 = cv2.cvtColor(aligned_face1, cv2.COLOR_BGR2GRAY)
+    gray_face2 = cv2.cvtColor(aligned_face2, cv2.COLOR_BGR2GRAY)
+
+    mat1 = array(gray_face1)
+    mat2 = array(gray_face2)
+
+    embeding_mat1 = np.zeros((len(mat1), len(mat1[0])))
+    embeding_mat2 = np.zeros((len(mat2), len(mat2[0])))
+
+
+    final_mat = np.zeros((len(mat1), len(mat1[0])))
+
+    sum1 = 0
+    sum2 = 0
+
+    for i in range(len(mat1)):
+        for j in range(len(mat1[0])):
+            sum1 += mat1[i][j] ** 2
+
+    for i in range(len(mat2)):
+        for j in range(len(mat2[0])):
+            sum2 += mat2[i][j] ** 2
+
+    sum1 = math.sqrt(sum1)
+    sum2 = math.sqrt(sum2)
+
+    for i in range(len(mat1)):
+        for j in range(len(mat1[0])):
+            embeding_mat1[i][j] = float(mat1[i][j]) / float(sum1)
+
+    for i in range(len(mat2)):
+        for j in range(len(mat2[0])):
+            embeding_mat2[i][j] = float(mat2[i][j]) / sum2
+
+    for i in range(len(mat1)):
+        for j in range(len(mat1[0])):
+            final_mat[i][j] = (embeding_mat1[i][j] - embeding_mat2[i][j]) ** 2
+
+    sim_score = 1 - math.sqrt(final_mat.sum())
+
+    return sim_score
+
+
 
 if __name__ == '__main__':
-    test_img_path = 'test2.png'
-    cascPath = '/usr/local/share/OpenCV/haarcascades/haarcascade_frontalface_alt2.xml'
+    FaceMatching('2.png', '6.png')
+    # test_img_path = 'test2.png'
+    # cascPath = '/usr/local/share/OpenCV/haarcascades/haarcascade_frontalface_alt2.xml'
 
-    face_detect(test_img_path, cascPath, True, None)
+    # face_detect(test_img_path, cascPath, True, None)
