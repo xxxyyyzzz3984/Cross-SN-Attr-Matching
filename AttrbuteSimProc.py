@@ -536,20 +536,20 @@ def profile_img_similarity_face(target_root, both_faces_filepath, save_txt_path,
             os.system('cp -a ' + target_root + 'flickr_profile_images/' + face_pair_info['flickr_face_user'] + '/*'
                   + ' ' + flickr_faces_dir + face_pair_info['flickr_face_user'] + '/')
 
-    # print 'aligning faces...'
-    # twi_aligned_faces_dir = target_root + 'twitter_faces_' + str(aligned_size)
-    # flk_aligned_faces_dir = target_root + 'flickr_faces_' + str(aligned_size)
-    #
-    # os.system('python ../facenet/src/align_dataset_mtcnn.py ' + target_root + 'twitter_faces/ ' +
-    #           twi_aligned_faces_dir + ' --image_size ' + str(aligned_size) + ' --margin 44')
-    #
-    # os.system('python ../facenet/src/align_dataset_mtcnn.py ' + target_root + 'flickr_faces/ ' +
-    #           flk_aligned_faces_dir + ' --image_size ' + str(aligned_size) + ' --margin 44')
+    print 'aligning faces...'
+    twi_aligned_faces_dir = target_root + 'twitter_faces_' + str(aligned_size)
+    flk_aligned_faces_dir = target_root + 'flickr_faces_' + str(aligned_size)
+
+    os.system('python ../facenet/src/align_dataset_mtcnn.py ' + target_root + 'twitter_faces/ ' +
+              twi_aligned_faces_dir + ' --image_size ' + str(aligned_size) + ' --margin 44')
+
+    os.system('python ../facenet/src/align_dataset_mtcnn.py ' + target_root + 'flickr_faces/ ' +
+              flk_aligned_faces_dir + ' --image_size ' + str(aligned_size) + ' --margin 44')
 
     print 'matching faces...'
-    sim_matrix = np.zeros((matrix_rownum, matrix_colnum))
+    sim_matrix = np.zeros((matrix_rownum+1, matrix_colnum+1))
     for face_pair_info in face_pair_infos:
-        print 'print matching %s and %s at (%d, %d)' % (face_pair_info['twi_face_user'], face_pair_info['flickr_face_user'],
+        print 'matching %s and %s at (%d, %d)' % (face_pair_info['twi_face_user'], face_pair_info['flickr_face_user'],
                                                         face_pair_info['row_index'], face_pair_info['col_index'])
         try:
             twi_pic_path = target_root + 'twitter_faces_' + str(aligned_size) + '/' + \
@@ -594,9 +594,9 @@ if __name__ == '__main__':
       #                                '../target_data/flickr_profile_images/','../target_data/profile_pic_similarity_matrix.txt'
       #                                , '../target_data/both_faces.txt')
 
-    profile_img_similarity_face('../target_data/',
-                                '../target_data/both_have_faces_pairs.txt',
-                                '../target_data/profile_pic_similarity_matrix_face.txt', 160, 2068, 504)
+    # profile_img_similarity_face('../target_data/',
+    #                             '../target_data/both_have_faces_pairs.txt',
+    #                             '../target_data/profile_pic_similarity_matrix_face.txt', 160, 2068, 504)
     # test strings similarity
     # string1 = 'my name is yinhao'
     # string2 = 'something is common'
@@ -624,4 +624,6 @@ if __name__ == '__main__':
     #         f_out.close()
     #
     #         print 'Dealing with user ' + info['ownername']
+
+    pass
 
