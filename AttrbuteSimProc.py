@@ -625,5 +625,33 @@ if __name__ == '__main__':
     #
     #         print 'Dealing with user ' + info['ownername']
 
-    pass
+    username_sim_matrix = np.loadtxt('../target_data/username_similarity_matrix.txt')
+    bio_sim_matrix = np.loadtxt('../target_data/bio_similarity_matrix.txt')
+    location_sim_matrix = np.loadtxt('../target_data/location_similarity_matrix.txt')
+    personal_website_similarity_matrix = np.loadtxt('../target_data/personal_website_similarity_matrix.txt')
+    pic_sim_matrix = np.loadtxt('../target_data/profile_pic_similarity_matrix.txt')
+
+    username_w = 0.51427
+    location_w = 0.509717
+    bio_w = 0.171117
+    website_w = 0.194603
+    pic_w = 0.30354
+
+    norm_username_w = username_w / (username_w + location_w + bio_w + website_w + pic_w)
+    norm_location_w = location_w / (username_w + location_w + bio_w + website_w + pic_w)
+    norm_bio_w = bio_w / (username_w + location_w + bio_w + website_w + pic_w)
+    norm_website_W = website_w / (username_w + location_w + bio_w + website_w + pic_w)
+    norm_pic_w = pic_w / (username_w + location_w + bio_w + website_w + pic_w)
+
+    final_sim_matrix = norm_username_w * username_sim_matrix + norm_location_w * location_sim_matrix + \
+        norm_bio_w * bio_sim_matrix + norm_website_W * personal_website_similarity_matrix + \
+        norm_pic_w * pic_sim_matrix
+
+    # np.savetxt('../target_data/similarity_matrix.txt', final_sim_matrix)
+
+    for i in range(len(final_sim_matrix)):
+        for j in range(len(final_sim_matrix[0])):
+            if final_sim_matrix[i][j] > 0.1:
+                print final_sim_matrix[i][j]
+                print i, j
 
